@@ -7,11 +7,12 @@ public class PlayerMovement : MonoBehaviour
     private Direction currentDirection;
     private Vector2 playerInput;
     private bool isMoving = false;
-    [SerializeField] private bool isLocked;
+    private bool isLocked;
     private Vector3 startPos;
     private Vector3 endPos;
     private float timer;
     public float movementSpeed;
+    public Vector3 curPos;
 
     [Space(15)]
     public Sprite northSprite;
@@ -35,14 +36,19 @@ public class PlayerMovement : MonoBehaviour
     private Camera mainCamera;
     private Vector3 cameraStartPos;
     private Vector3 cameraEndPos;
-    [SerializeField] private bool northLock;
-    [SerializeField] private bool eastLock;
-    [SerializeField] private bool southLock;
-    [SerializeField] private bool westLock;
+    private bool northLock;
+    private bool eastLock;
+    private bool southLock;
+    private bool westLock;
 
     [Space(15)]
     private Vector3 oldPos;
-    [SerializeField] private bool justTeleported;
+    private bool justTeleported;
+    private bool toTeleport;
+    private Transform teleportPos;
+
+    [Space(15)]
+    public GroundType currentGroundType;
 
 
 
@@ -158,13 +164,16 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!justTeleported)
         {
-            Debug.Log("Inside TeleportPlayer");
-            transform.position = new Vector3(newPos.position.x, newPos.position.y, newPos.position.z);
-            mainCamera.transform.position = newPos.position;
+            toTeleport = true;
+            teleportPos = newPos;
             justTeleported = true;
         }
     }
 
+    public void ChangeGroundType(GroundType gt)
+    {
+        currentGroundType = gt;
+    }
 
     private IEnumerator Move(Transform t)
     {
@@ -189,8 +198,13 @@ public class PlayerMovement : MonoBehaviour
             yield return null;
         }
 
-
         isMoving = false;
+        if(toTeleport)
+        {
+            transform.position = teleportPos.position;
+            mainCamera.transform.position = new Vector3(teleportPos.position.x, teleportPos.position.y, mainCamera.transform.position.z);
+            toTeleport = false;
+        }
         yield return 0;
     }
 
@@ -239,7 +253,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        if(!isMoving && !isLocked)
+        curPos = transform.position;
+        if (!isMoving && !isLocked)
         {
             playerInput = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
             if(Mathf.Abs(playerInput.x) > Mathf.Abs(playerInput.y))
@@ -251,12 +266,13 @@ public class PlayerMovement : MonoBehaviour
                 playerInput.x = 0;
             }
 
-            if(playerInput!= Vector2.zero)
+
+            if (playerInput!= Vector2.zero)
             {
                 bool canMove = true;
                 UpdateDirection(playerInput);
 
-
+                
                 switch (currentDirection)
                 {
                     case Direction.North:
@@ -276,6 +292,7 @@ public class PlayerMovement : MonoBehaviour
                         canMove = westBoundary.ReturnCanMove();
                         break;
                 }
+
                 if (canMove)
                 {
                     StartCoroutine(Move(transform));
@@ -339,6 +356,7 @@ public class PlayerMovement : MonoBehaviour
     {
         playerSprite = GetComponentInChildren<SpriteRenderer>();
         mainCamera = Camera.main;
+        currentGroundType = GroundType.Null;
     }
 
 }

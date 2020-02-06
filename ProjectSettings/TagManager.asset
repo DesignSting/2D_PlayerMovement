@@ -8,6 +8,7 @@ TagManager:
   - NPC
   - CameraLock
   - Teleport
+  - Ground
   layers:
   - Default
   - TransparentFX

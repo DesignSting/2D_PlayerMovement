@@ -8,6 +8,7 @@ public class PlayerBoundary : MonoBehaviour
     [SerializeField] private bool npcPresent;
     [SerializeField] private bool horizonalLock;
     [SerializeField] private bool verticalLock;
+    private GroundType gt;
 
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -25,9 +26,9 @@ public class PlayerBoundary : MonoBehaviour
 
         if(collision.tag == "Teleport")
         {
-            Debug.Log("Teleporting");
             collision.GetComponent<Teleport>().TeleportPlayer();
         }
+
     }
 
     private void OnTriggerStay2D(Collider2D collision)
@@ -47,6 +48,12 @@ public class PlayerBoundary : MonoBehaviour
                     verticalLock = true;
                     break;
             }
+        }
+
+        if(collision.tag == "Ground")
+        {
+            gt = collision.GetComponent<LongGrass>().ReturnGroundType();
+            FindObjectOfType<PlayerMovement>().ChangeGroundType(gt);
         }
     }
 
@@ -77,6 +84,11 @@ public class PlayerBoundary : MonoBehaviour
                     verticalLock = false;
                     break;
             }
+        }
+
+        if(collision.tag == "Ground")
+        {
+            FindObjectOfType<PlayerMovement>().ChangeGroundType(GroundType.Null);
         }
 
     }
@@ -113,5 +125,6 @@ public class PlayerBoundary : MonoBehaviour
             return true;
         return false;
     }
+
 }
 

@@ -4,10 +4,20 @@ using UnityEngine;
 
 public class Teleport : MonoBehaviour
 {
-    [SerializeField] private Transform teleportTransform;
+    [SerializeField] private Teleport teleport;
+    [SerializeField] private GameObject player;
 
     public void TeleportPlayer()
     {
-        FindObjectOfType<PlayerMovement>().TeleportPlayer(teleportTransform);
+        player.GetComponent<PlayerMovement>().TeleportPlayer(teleport.transform);
+
     }
+
+    private void Start()
+    {
+        player = GameObject.Find("Player");
+    }
+
+
 }
+
