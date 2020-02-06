@@ -22,6 +22,12 @@ public class PlayerBoundary : MonoBehaviour
             currentCount++;
             npcPresent = true;
         }
+
+        if(collision.tag == "Teleport")
+        {
+            Debug.Log("Teleporting");
+            collision.GetComponent<Teleport>().TeleportPlayer();
+        }
     }
 
     private void OnTriggerStay2D(Collider2D collision)

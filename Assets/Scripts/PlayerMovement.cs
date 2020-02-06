@@ -40,6 +40,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool southLock;
     [SerializeField] private bool westLock;
 
+    [Space(15)]
+    private Vector3 oldPos;
+    [SerializeField] private bool justTeleported;
+
 
 
     public void LockPlayer(NPC npc)
@@ -150,7 +154,16 @@ public class PlayerMovement : MonoBehaviour
         return toReturn;
     }
 
-    
+    public void TeleportPlayer(Transform newPos)
+    {
+        if (!justTeleported)
+        {
+            Debug.Log("Inside TeleportPlayer");
+            transform.position = new Vector3(newPos.position.x, newPos.position.y, newPos.position.z);
+            mainCamera.transform.position = newPos.position;
+            justTeleported = true;
+        }
+    }
 
 
     private IEnumerator Move(Transform t)
@@ -181,6 +194,49 @@ public class PlayerMovement : MonoBehaviour
         yield return 0;
     }
 
+    private void UpdateDirection(Vector2 input)
+    {
+        if (playerInput.x < 0)
+        {
+            currentDirection = Direction.West;
+        }
+        if (playerInput.x > 0)
+        {
+            currentDirection = Direction.East;
+        }
+        if (playerInput.y < 0)
+        {
+            currentDirection = Direction.South;
+        }
+        if (playerInput.y > 0)
+        {
+            currentDirection = Direction.North;
+        }
+    }
+
+    private void UpdateDirection(Direction newDirection)
+    {
+        switch (newDirection)
+        {
+            case Direction.North:
+                currentDirection = Direction.North;
+                playerSprite.sprite = northSprite;
+                break;
+            case Direction.East:
+                currentDirection = Direction.East;
+                playerSprite.sprite = eastSprite;
+                break;
+            case Direction.South:
+                currentDirection = Direction.South;
+                playerSprite.sprite = southSprite;
+                break;
+            case Direction.West:
+                playerSprite.sprite = westSprite;
+                currentDirection = Direction.West;
+                break;
+        }
+    }
+
     private void Update()
     {
         if(!isMoving && !isLocked)
@@ -198,22 +254,8 @@ public class PlayerMovement : MonoBehaviour
             if(playerInput!= Vector2.zero)
             {
                 bool canMove = true;
-                if(playerInput.x < 0)
-                {
-                    currentDirection = Direction.West;
-                }
-                if (playerInput.x > 0)
-                {
-                    currentDirection = Direction.East;
-                }
-                if (playerInput.y < 0)
-                {
-                    currentDirection = Direction.South;
-                }
-                if (playerInput.y > 0)
-                {
-                    currentDirection = Direction.North;
-                }
+                UpdateDirection(playerInput);
+
 
                 switch (currentDirection)
                 {
@@ -234,8 +276,13 @@ public class PlayerMovement : MonoBehaviour
                         canMove = westBoundary.ReturnCanMove();
                         break;
                 }
-                if(canMove)
+                if (canMove)
+                {
                     StartCoroutine(Move(transform));
+
+                    if (justTeleported)
+                        justTeleported = false;
+                }
             }
 
             if(Input.GetKeyUp(KeyCode.Space))
