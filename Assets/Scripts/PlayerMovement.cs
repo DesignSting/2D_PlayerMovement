@@ -11,7 +11,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 startPos;
     private Vector3 endPos;
     private float timer;
-
     public float movementSpeed;
 
     [Space(15)]
@@ -28,9 +27,19 @@ public class PlayerMovement : MonoBehaviour
 
     [Space(15)]
     public CircleCollider2D thisCollider;
-    [SerializeField] private NPC currentNPC;
-    [SerializeField] private bool npcMoving;
+    private NPC currentNPC;
+    private bool npcMoving;
     private SpriteRenderer playerSprite;
+
+    [Space(15)]
+    private Camera mainCamera;
+    private Vector3 cameraStartPos;
+    private Vector3 cameraEndPos;
+    [SerializeField] private bool northLock;
+    [SerializeField] private bool eastLock;
+    [SerializeField] private bool southLock;
+    [SerializeField] private bool westLock;
+
 
 
     public void LockPlayer(NPC npc)
@@ -45,22 +54,128 @@ public class PlayerMovement : MonoBehaviour
         currentNPC = null;
     }
 
+    private float CheckForHorizontalLock(float cameraPos, float playerInputX)
+    {
+        float toReturn = 0.0f;
+
+        if (westLock && eastLock)
+        {
+            toReturn = cameraPos;
+            
+        }
+        else if(!westLock && !eastLock)
+        {
+            toReturn = (cameraPos + System.Math.Sign(playerInputX));
+        }
+
+        else if(!eastLock && currentDirection == Direction.East)
+        {
+            if (westLock)
+            {
+                toReturn = (cameraPos + System.Math.Sign(playerInputX));
+            }
+            else
+            {
+                toReturn = cameraPos;
+            }
+        }
+
+        else if((!westLock && currentDirection == Direction.West))
+        {
+            if (eastLock)
+            {
+                toReturn = (cameraPos + System.Math.Sign(playerInputX));
+            }
+            else
+            {
+                toReturn = cameraPos;
+            }
+        }
+        else if ((eastLock && currentDirection == Direction.East) || (westLock && currentDirection == Direction.West))
+        {
+            toReturn = cameraPos;
+        }
+        else
+        { 
+            toReturn = (cameraPos + System.Math.Sign(playerInputX));
+        }
+        return toReturn;
+    }
+
+    private float CheckForVerticalLock(float cameraPos, float playerInputY)
+    {
+        float toReturn = 0.0f;
+
+        if (northLock && southLock)
+        {
+            toReturn = cameraPos;
+
+        }
+        else if (!northLock && !southLock)
+        {
+            toReturn = (cameraPos + System.Math.Sign(playerInputY));
+        }
+
+        else if (!southLock && currentDirection == Direction.South)
+        {
+            if (northLock)
+            {
+                toReturn = (cameraPos + System.Math.Sign(playerInputY));
+            }
+            else
+            {
+                toReturn = cameraPos;
+            }
+        }
+
+        else if ((!northLock && currentDirection == Direction.North))
+        {
+            if (southLock)
+            {
+                toReturn = (cameraPos + System.Math.Sign(playerInputY));
+            }
+            else
+            {
+                toReturn = cameraPos;
+            }
+        }
+        else if ((southLock && currentDirection == Direction.South) || (northLock && currentDirection == Direction.North))
+        {
+            toReturn = cameraPos;
+        }
+        else
+        {
+            toReturn = (cameraPos + System.Math.Sign(playerInputY));
+        }
+        return toReturn;
+    }
+
+    
 
 
     private IEnumerator Move(Transform t)
     {
         isMoving = true;
         startPos = t.position;
+        cameraStartPos = mainCamera.transform.position;
         timer = 0;
 
-        endPos = new Vector3(startPos.x + System.Math.Sign(playerInput.x), startPos.y + System.Math.Sign(playerInput.y), startPos.z);
+        eastLock = eastBoundary.ReturnHorizonalLock();
+        westLock = westBoundary.ReturnHorizonalLock();
+        northLock = northBoundary.ReturnVerticalLock();
+        southLock = southBoundary.ReturnVerticalLock();
 
-        while(timer < 1f)
+        endPos = new Vector3(startPos.x + System.Math.Sign(playerInput.x), startPos.y + System.Math.Sign(playerInput.y), startPos.z);
+        cameraEndPos = new Vector3(CheckForHorizontalLock(cameraStartPos.x, playerInput.x), CheckForVerticalLock(cameraStartPos.y, playerInput.y), cameraStartPos.z);
+
+        while (timer < 1f)
         {
             timer += Time.deltaTime * movementSpeed;
+            mainCamera.transform.position = Vector3.Lerp(cameraStartPos, cameraEndPos, timer);
             t.position = Vector3.Lerp(startPos, endPos, timer);
             yield return null;
         }
+
 
         isMoving = false;
         yield return 0;
@@ -176,6 +291,7 @@ public class PlayerMovement : MonoBehaviour
     private void Start()
     {
         playerSprite = GetComponentInChildren<SpriteRenderer>();
+        mainCamera = Camera.main;
     }
 
 }
