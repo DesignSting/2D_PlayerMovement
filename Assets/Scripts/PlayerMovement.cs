@@ -49,6 +49,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Space(15)]
     public GroundType currentGroundType;
+    [SerializeField] private int stepsInWild;
 
 
 
@@ -205,7 +206,37 @@ public class PlayerMovement : MonoBehaviour
             mainCamera.transform.position = new Vector3(teleportPos.position.x, teleportPos.position.y, mainCamera.transform.position.z);
             toTeleport = false;
         }
+
+        if (eastBoundary.ReturnGroundType() == westBoundary.ReturnGroundType() && eastBoundary.ReturnGroundType() != currentGroundType)
+        {
+            currentGroundType = eastBoundary.ReturnGroundType();
+        }
+        else if(northBoundary.ReturnGroundType() == southBoundary.ReturnGroundType() && northBoundary.ReturnGroundType() != currentGroundType)
+        {
+            currentGroundType = southBoundary.ReturnGroundType();
+        }
+        if(currentGroundType != GroundType.Null)
+        {
+            CheckForAttack();
+        }
+        else
+        {
+            stepsInWild = 0;
+        }
+
         yield return 0;
+    }
+
+    private void CheckForAttack()
+    {
+        stepsInWild++;
+        float rand = Random.Range(0.0f, 100.0f);
+        if (rand < (2 * stepsInWild))
+        {
+            Debug.Log("I have been attacked");
+            stepsInWild = 0;
+            isLocked = true;
+        }
     }
 
     private void UpdateDirection(Vector2 input)

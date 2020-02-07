@@ -8,7 +8,7 @@ public class PlayerBoundary : MonoBehaviour
     [SerializeField] private bool npcPresent;
     [SerializeField] private bool horizonalLock;
     [SerializeField] private bool verticalLock;
-    private GroundType gt;
+    [SerializeField] private GroundType gt;
 
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -53,7 +53,6 @@ public class PlayerBoundary : MonoBehaviour
         if(collision.tag == "Ground")
         {
             gt = collision.GetComponent<LongGrass>().ReturnGroundType();
-            FindObjectOfType<PlayerMovement>().ChangeGroundType(gt);
         }
     }
 
@@ -88,7 +87,7 @@ public class PlayerBoundary : MonoBehaviour
 
         if(collision.tag == "Ground")
         {
-            FindObjectOfType<PlayerMovement>().ChangeGroundType(GroundType.Null);
+            gt = GroundType.Null;
         }
 
     }
@@ -126,5 +125,9 @@ public class PlayerBoundary : MonoBehaviour
         return false;
     }
 
+    public GroundType ReturnGroundType()
+    {
+        return gt;
+    }
 }
 
