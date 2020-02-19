@@ -46,6 +46,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background_Sprite
+    uniqueID: 3134575527
+    locked: 0
   - name: Environment_Behind
     uniqueID: 3474944933
     locked: 0
